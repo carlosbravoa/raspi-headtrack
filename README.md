@@ -4,8 +4,8 @@ Using a raspberry pi, Coral TPU, pan-tilt hat, I wrote a simple code for head tr
 ![Raspberry PI with pan-tilt hat and CoralTPU](pan-tilt.png)
 
 Requirements: 
-- Coral TPU (and modules installed)
-- Pan-tilt hat (and modules installed)
+- Coral TPU (and modules installed) https://coral.ai/products/accelerator
+- Pan-tilt hat (and modules installed) https://shop.pimoroni.com/products/pan-tilt-hat?variant=33704345034
 - Raspberry picam
 - Python 3.6+
 - PIL
