@@ -1,22 +1,11 @@
+#!/usr/bin/env python
+
 """A demo for object detection or image classification using CORAL TPU.
 
-This example is intended to run later in a raspberry PI, but for now, is running on a
-Linux machine
+This has been written "quick and dirty", but it works and is very fun to play with.
 
-The only pending thing to make it run on the raspberry, since capturing frames require
-a different method through the picamera python library
-See:
-https://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python
-
-For running in a Linux PC, follow the standard installation of the CORAL TPU USB, plus
-installing Python-OpenCV
-
-Examples (Running under python-tflite-source/edgetpu directory):
-  - Object recognition:
-    python3 demo/my_TPU_image_recognition.py \
-    --model=test_data/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite \
-    --label=test_data/coco_labels.txt --mode=OBJECT_DETECTION \
-    --camera=0
+Run it with:
+python3 head_tracking_pantilt.py --model models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
 
 """
 import pantilthat
@@ -39,37 +28,15 @@ from picamera import PiCamera
 import io
 
 # Parameters for visualizing the labels and boxes
-FONT = cv2.FONT_HERSHEY_SIMPLEX
-FONT_SIZE = 0.7
-LABEL_BOX_PADDING = 5
-LABEL_BOX_OFFSET_TOP = int(20 * FONT_SIZE) + LABEL_BOX_PADDING
-LINE_WEIGHT = 1
 IMAGE_SIZE = (640,480)
 IMAGE_CENTER = (int(IMAGE_SIZE[0]/2), int(IMAGE_SIZE[1]/2))
 MINANGLESTEP = 1 #Degrees
-IMGTHRESHOLD = 20 #pixels to avoid flickering
-
-# Function to read labels from text files.
-def read_label_file(file_path):
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
-    ret = {}
-    for line in lines:
-        pair = line.strip().split(maxsplit=1)
-        ret[int(pair[0])] = pair[1].strip()
-    return ret
+IMGTHRESHOLD = 20 #pixels to stop moving once the image has been more or less centered
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--model', help='Path of the detection model.', required=True)
-    parser.add_argument(
-        '--label', help='Path of the labels file.')
-#    parser.add_argument(
-#        '--mode', help='Mode for de detection: OBJECT_DETECTION or IMAGE_CLASSIFICATION',
-#        required=True)
-    parser.add_argument(
-        '--camera', help='Camera source (if multiple available)', type=int, required=False)
 
     args = parser.parse_args()
 
@@ -81,10 +48,6 @@ def main():
 
     engine = DetectionEngine(args.model)
 
-    labels = read_label_file(args.label) if args.label else None
-    label = None
-    camera = args.camera if args.camera else 0
-
     # Initialize the camera
     #cam = cv2.VideoCapture(camera)
     camera = PiCamera()
@@ -93,12 +56,6 @@ def main():
     camera.vflip = True
     # Create the in-memory stream
     stream = io.BytesIO()
-
-    # Initialize the timer for fps
-    start_time = time.time()
-    frame_times = deque(maxlen=40)
-
-    screencenter = (int(IMAGE_SIZE[0]/2), int(IMAGE_SIZE[1]/2))
 
     print("Capture started")
     while True:
@@ -118,19 +75,10 @@ def main():
             if ans:
                 for obj in ans:
                     if obj.score > 0.4:
-                        #if labels:
-                        #    label = labels[obj.label_id] + " - {0:.2f}".format(obj.score)
-                        #draw_rectangles(obj.bounding_box, cv2_im, label=label)
                         resultado = show_box_center_and_size(obj.bounding_box)
-                        stepx, stepy = center_camera(resultado, screencenter)
+                        center_camera(resultado, IMAGE_CENTER)
             else:
-                #draw_text(cv2_im, 'No object detected!')
                 pass
-
-        frame_times.append(time.time())
-        fps = len(frame_times)/float(frame_times[-1] - frame_times[0] + 0.001)
-        #draw_text(cv2_im, "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
-        #print("FPS / Inference time: " + "{:.1f} / {:.2f}ms".format(fps, lastInferenceTime))
 
 def center_camera(objxy, screencenter):
     '''
@@ -148,7 +96,6 @@ def center_camera(objxy, screencenter):
     max_angle = 80  # To stay safe and not exeed the max angle of the servo
     stepx = MINANGLESTEP  # 1 by default #+ abs(int(objxy[0]/100))
     stepy = MINANGLESTEP
-    threshold = IMGTHRESHOLD  # 10 by default
 
     dX = screencenter[0] - objxy[0]
     dY = screencenter[1] - objxy[1]
@@ -160,7 +107,7 @@ def center_camera(objxy, screencenter):
     currentPan = pantilthat.get_pan()
     currentTilt = pantilthat.get_tilt()
 
-    print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx})")
+    #print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx})")
 
     if dX < 0 - IMGTHRESHOLD and abs(currentPan) < max_angle + stepx:
        pantilthat.pan(currentPan + stepx)
@@ -171,8 +118,6 @@ def center_camera(objxy, screencenter):
        pantilthat.tilt(currentTilt + stepy)
     elif dY > 0 + IMGTHRESHOLD and abs(currentPan) < max_angle + stepy: 
        pantilthat.tilt(currentTilt - stepy)
-
-    return (stepx, stepy)
 
 def show_box_center_and_size(rectangle):
     '''
@@ -196,23 +141,6 @@ def show_box_center_and_size(rectangle):
 
     #print(IMAGE_CENTER[0] - centerX, IMAGE_CENTER[1] - centerY, w, h)
     return (centerX, centerY)
-
-def draw_rectangles(rectangles, image_np, label=None):
-    p1 = (int(rectangles[0][0]), int(rectangles[0][1]))
-    p2 = (int(rectangles[1][0]), int(rectangles[1][1]))
-    cv2.rectangle(image_np, p1, p2, color=(255, 0, 0), thickness=LINE_WEIGHT)
-    if label:
-        cv2.rectangle(image_np, (p1[0], p1[1]-LABEL_BOX_OFFSET_TOP), (p2[0], p1[1] + LABEL_BOX_PADDING),
-                      color=(255, 0, 0),
-                      thickness=-1)
-        cv2.putText(image_np, label, p1, FONT, FONT_SIZE, (255, 255, 255), 1, cv2.LINE_AA)
-    #imgname = str(time.time())
-    #cv2.imwrite('/home/pi/development/Coral-TPU/imgs/' + imgname + '.jpg', image_np)
-
-def draw_text(image_np, label, pos=0):
-    p1 = (0, pos*30+20)
-    #cv2.rectangle(image_np, (p1[0], p1[1]-20), (800, p1[1]+10), color=(0, 255, 0), thickness=-1)
-    cv2.putText(image_np, label, p1, FONT, FONT_SIZE, (0, 0, 0), 1, cv2.LINE_AA)
 
 if __name__ == '__main__':
     main()
