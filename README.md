@@ -7,7 +7,6 @@ Requirements:
 - Coral TPU (and modules installed)
 - Pan-tilt hat (and modules installed)
 - Raspberry picam
-- OpenCV
 - Python 3.6+
 - PIL
 

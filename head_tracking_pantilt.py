@@ -21,7 +21,7 @@ import time
 from collections import deque, Counter
 
 #For webcam capture and drawing boxes
-import cv2
+#import cv2
 
 #picamera
 from picamera import PiCamera
