@@ -132,7 +132,7 @@ def center_camera(objxy, screencenter):
         newTilt = currentTilt - stepy
         newTilt = newTilt % max_angle
 
-    print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx})")
+    print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx},{stepy})({newPan},{newTilt})")
     pantilthat.pan(newPan)
     pantilthat.tilt(newTilt)
 
