@@ -75,6 +75,7 @@ def main():
                 pass
         except KeyboardInterrupt:
             reset_pan_tilt()
+            raise
 
         except:
             reset_pan_tilt()
@@ -127,10 +128,10 @@ def center_camera(objxy, screencenter):
         tilt_direction = -1
 
     newPan = currentPan + pan_direction * stepx  # Add or substract stepx to pan
-    newPan = newPan % (pan_direction * max_angle)  # To avoid having a value higher than max_angle
+    newPan = newPan if newPan < pan_direction * max_angle else max_angle  # To avoid having a value higher than max_angle
 
     newTilt = currentTilt + tilt_direction * stepy  # Add or substract stepy to tilt
-    newTilt = newTilt % (tilt_direction * max_angle)  # To avoid having a value higher than max_angle
+    newTilt = newTilt if newTilt < tilt_direction * max_angle else max_angle  # To avoid having a value higher than max_angle
 
     print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx}); {newPan},{newTilt}")
 
