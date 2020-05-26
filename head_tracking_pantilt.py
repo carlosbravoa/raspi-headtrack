@@ -11,6 +11,7 @@ python3 head_tracking_pantilt.py \\
 import io
 import argparse
 import time
+import sys
 from PIL import Image
 from edgetpu.detection.engine import DetectionEngine
 
@@ -22,6 +23,7 @@ IMAGE_SIZE = (640, 480)
 IMAGE_CENTER = (int(IMAGE_SIZE[0]/2), int(IMAGE_SIZE[1]/2))
 MINANGLESTEP = 1 #Degrees
 IMGTHRESHOLD = 20 #pixels to stop moving once the image has been more or less centered
+DEBUG = False # Change this to see more information on console about the detection
 
 def main():
     '''Main function for running head tracking.
@@ -51,6 +53,9 @@ def main():
     # Create the in-memory stream
     stream = io.BytesIO()
 
+    debug = DEBUG
+    image_center = IMAGE_CENTER
+
     print("Capture started")
     while True:
         try:
@@ -70,12 +75,13 @@ def main():
                 for obj in ans:
                     if obj.score > 0.4:
                         resultado = show_box_center_and_size(obj.bounding_box)
-                        center_camera(resultado, IMAGE_CENTER)
+                        center_camera(resultado, image_center, debug)
             else:
                 pass
         except KeyboardInterrupt:
+            print("Closing program")
             reset_pan_tilt()
-            raise
+            sys.exit()
 
         except:
             reset_pan_tilt()
@@ -86,7 +92,7 @@ def reset_pan_tilt():
     pantilthat.tilt(0)
     time.sleep(1)
 
-def center_camera(objxy, screencenter):
+def center_camera(objxy, screencenter, debug=False):
     '''
     from an (X,Y), it tries to pan/tilt to minimize the distance with the center of the "view"
 
@@ -132,7 +138,9 @@ def center_camera(objxy, screencenter):
         newTilt = currentTilt - stepy
         newTilt = newTilt if newTilt > -max_angle else -max_angle
 
-    print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx},{stepy})({newPan},{newTilt})")
+    if debug:
+        print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx},{stepy})({newPan},{newTilt})")
+
     pantilthat.pan(newPan)
     pantilthat.tilt(newTilt)
 
