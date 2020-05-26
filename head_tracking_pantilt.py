@@ -36,8 +36,7 @@ def main():
     args = parser.parse_args()
 
     # Initialize the pan-tilt thing
-    pantilthat.pan(0)
-    pantilthat.tilt(0)
+    reset_pan_tilt()
 
     # Initialize engine.
 
@@ -54,25 +53,37 @@ def main():
 
     print("Capture started")
     while True:
-        #ret, cv2_im = cam.read()
-        stream = io.BytesIO() #wipe the contents
-        camera.capture(stream, format='jpeg', use_video_port=True)
-        stream.seek(0)
-        # we need to flip it here!
-        pil_im = Image.open(stream)
-        #cv2_im = np.array(pil_im)
-        #cv2_im = cv2.flip(cv2_im, 1) #Flip horizontally
-        #cv2_im = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
+        try:
+            #ret, cv2_im = cam.read()
+            stream = io.BytesIO() #wipe the contents
+            camera.capture(stream, format='jpeg', use_video_port=True)
+            stream.seek(0)
+            # we need to flip it here!
+            pil_im = Image.open(stream)
+            #cv2_im = np.array(pil_im)
+            #cv2_im = cv2.flip(cv2_im, 1) #Flip horizontally
+            #cv2_im = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
 
-        ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
-                                     relative_coord=False, top_k=10)
-        if ans:
-            for obj in ans:
-                if obj.score > 0.4:
-                    resultado = show_box_center_and_size(obj.bounding_box)
-                    center_camera(resultado, IMAGE_CENTER)
-        else:
-            pass
+            ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
+                                        relative_coord=False, top_k=10)
+            if ans:
+                for obj in ans:
+                    if obj.score > 0.4:
+                        resultado = show_box_center_and_size(obj.bounding_box)
+                        center_camera(resultado, IMAGE_CENTER)
+            else:
+                pass
+        except KeyboardInterrupt:
+            reset_pan_tilt()
+
+        except:
+            reset_pan_tilt()
+            raise
+
+def reset_pan_tilt():
+    pantilthat.pan(0)
+    pantilthat.tilt(0)
+    time.sleep(1)
 
 def center_camera(objxy, screencenter):
     '''
@@ -121,7 +132,7 @@ def center_camera(objxy, screencenter):
     newTilt = currentTilt + tilt_direction * stepy  # Add or substract stepy to tilt
     newTilt = newTilt % (tilt_direction * max_angle)  # To avoid having a value higher than max_angle
 
-    #print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx}); {newPan},{newTilt}")
+    print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx}); {newPan},{newTilt}")
 
     pantilthat.pan(newPan)
     pantilthat.tilt(newTilt)
