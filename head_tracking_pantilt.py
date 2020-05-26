@@ -118,19 +118,19 @@ def center_camera(objxy, screencenter):
 
     if dX < 0 - IMGTHRESHOLD and abs(currentPan) + stepx < max_angle:
         newPan = currentPan + stepx
-        newPan = newPan % max_angle
+        newPan = newPan if newPan < max_angle else max_angle
         
     elif dX > 0 + IMGTHRESHOLD and abs(currentPan) + stepx < max_angle:
         newPan = currentPan - stepx
-        newPan = newPan % -max_angle
+        newPan = newPan if newPan > -max_angle else -max_angle
 
     if dY < 0 - IMGTHRESHOLD and abs(currentTilt) + stepy < max_angle:
         newTilt = currentTilt + stepy
-        newTilt = newTilt % max_angle
+        newTilt = newTilt if newTilt < max_angle else max_angle
 
     elif dY > 0 + IMGTHRESHOLD and abs(currentTilt) + stepy < max_angle:
         newTilt = currentTilt - stepy
-        newTilt = newTilt % -max_angle
+        newTilt = newTilt if newTilt > -max_angle else -max_angle
 
     print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx},{stepy})({newPan},{newTilt})")
     pantilthat.pan(newPan)
