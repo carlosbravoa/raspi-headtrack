@@ -103,6 +103,8 @@ def center_camera(objxy, screencenter):
     pan_direction = 1
     tilt_direction = 1
 
+    print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx})")
+
     if dX < 0 - IMGTHRESHOLD and abs(currentPan) < max_angle:
         pan_direction = 1
 
