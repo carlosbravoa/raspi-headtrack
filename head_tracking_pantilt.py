@@ -100,6 +100,9 @@ def center_camera(objxy, screencenter):
     currentPan = pantilthat.get_pan()
     currentTilt = pantilthat.get_tilt()
 
+    pan_direction = 1
+    tilt_direction = 1
+
     if dX < 0 - IMGTHRESHOLD and abs(currentPan) < max_angle:
         pan_direction = 1
 
