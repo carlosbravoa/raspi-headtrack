@@ -1,7 +1,7 @@
 # Raspi-headtrack
 Using a raspberry pi, Coral TPU, pan-tilt hat, I wrote a simple code for head tracking.
 
-The main idea was to use two servos to control the angle (pan and tilt) of the camera, given the position of a face on view. For the detection of the screen I used a CoralTPU, which is a USB accelerator to run tensorflow models. I'm using a face detection model. The device's libraries gives you the bounding box of the face, so the rest is to update the angle of both servos to move towards the detected face.
+The main idea was to use two servos to control the angle (pan and tilt) of the camera, given the position of a face on the captured image. For the face detection I used a CoralTPU, which is a USB accelerator able to run tensorflow models even with low powered devices (let's say to be able to run AI on IOT or AIOT). I'm using an out of the box face detection model. The device's libraries gives you the bounding box of the face, so the rest is to update the angle of both servos to move towards the detected face.
 
 ![Raspberry PI with pan-tilt hat and CoralTPU](pan-tilt.png)
 
