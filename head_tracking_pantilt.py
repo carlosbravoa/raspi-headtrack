@@ -112,24 +112,28 @@ def center_camera(objxy, screencenter):
     currentPan = pantilthat.get_pan()
     currentTilt = pantilthat.get_tilt()
 
-    if dX < 0 - IMGTHRESHOLD and abs(currentPan) < max_angle + stepx:
+    # Computing the next angle, starting on the current
+    newPan = currentPan
+    newTilt = currentTilt
+
+    if dX < 0 - IMGTHRESHOLD and abs(currentPan) + stepx < max_angle:
         newPan = currentPan + stepx
         newPan = newPan % max_angle
-        pantilthat.pan(newPan)
-    elif dX > 0 + IMGTHRESHOLD and abs(currentPan) < max_angle + stepx:
+        
+    elif dX > 0 + IMGTHRESHOLD and abs(currentPan) + stepx < max_angle:
         newPan = currentPan - stepx
         newPan = newPan % -max_angle
-        pantilthat.pan(newPan)
 
-    if dY < 0 - IMGTHRESHOLD and abs(currentPan) < max_angle + stepy:
+    if dY < 0 - IMGTHRESHOLD and abs(currentTilt) + stepy < max_angle:
         newTilt = currentTilt + stepy
         newTilt = newTilt % max_angle
-        pantilthat.tilt(newTilt)
-    elif dY > 0 + IMGTHRESHOLD and abs(currentPan) < max_angle + stepy: 
+
+    elif dY > 0 + IMGTHRESHOLD and abs(currentTilt) + stepy < max_angle:
         newTilt = currentTilt - stepy
         newTilt = newTilt % max_angle
-        pantilthat.tilt(newTilt)
 
+    pantilthat.pan(newPan)
+    pantilthat.tilt(newTilt)
 
 def show_box_center_and_size(rectangle):
     '''
