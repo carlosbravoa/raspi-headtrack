@@ -6,13 +6,13 @@ The main idea was to use two servos to control the angle (pan and tilt) of the c
 ![Raspberry PI with pan-tilt hat and CoralTPU](pan-tilt.png)
 
 Requirements: 
-- Coral TPU (and modules installed) https://coral.ai/products/accelerator
-- Pan-tilt hat (and modules installed) https://shop.pimoroni.com/products/pan-tilt-hat?variant=33704345034
+- Coral TPU (and modules installed) <https://coral.ai/products/accelerator>
+- Pan-tilt hat (and modules installed) <https://shop.pimoroni.com/products/pan-tilt-hat?variant=33704345034>
 - Raspberry picam
 - Python 3.6+
 - PIL
 
-Code here: https://github.com/carlosbravoa/raspi-headtrack
+Code here: <https://github.com/carlosbravoa/raspi-headtrack>
 
 Run it with:
 
