@@ -112,31 +112,24 @@ def center_camera(objxy, screencenter):
     currentPan = pantilthat.get_pan()
     currentTilt = pantilthat.get_tilt()
 
-    pan_direction = 1
-    tilt_direction = 1
+    if dX < 0 - IMGTHRESHOLD and abs(currentPan) < max_angle + stepx:
+        newPan = currentPan + stepx
+        newPan = newPan % max_angle
+        pantilthat.pan(newPan)
+    elif dX > 0 + IMGTHRESHOLD and abs(currentPan) < max_angle + stepx:
+        newPan = currentPan - stepx
+        newPan = newPan % -max_angle
+        pantilthat.pan(newPan)
 
-    if dX < 0 - IMGTHRESHOLD and abs(currentPan) < max_angle:
-        pan_direction = 1
+    if dY < 0 - IMGTHRESHOLD and abs(currentPan) < max_angle + stepy:
+        newTilt = currentTilt + stepy
+        newTilt = newTilt % max_angle
+        pantilthat.tilt(newTilt)
+    elif dY > 0 + IMGTHRESHOLD and abs(currentPan) < max_angle + stepy: 
+        newTilt = currentTilt - stepy
+        newTilt = newTilt % max_angle
+        pantilthat.tilt(newTilt)
 
-    elif dX > 0 + IMGTHRESHOLD and abs(currentPan) < max_angle:
-        pan_direction = -1
-
-    if dY < 0 - IMGTHRESHOLD and abs(currentPan) < max_angle:
-        tilt_direction = 1
-
-    elif dY > 0 + IMGTHRESHOLD and abs(currentPan) < max_angle:
-        tilt_direction = -1
-
-    newPan = currentPan + pan_direction * stepx  # Add or substract stepx to pan
-    newPan = newPan if abs(newPan) < max_angle else pan_direction * max_angle  # To avoid having a value higher than max_angle
-
-    newTilt = currentTilt + tilt_direction * stepy  # Add or substract stepy to tilt
-    newTilt = newTilt if abs(newTilt) < max_angle else tilt_direction * max_angle  # To avoid having a value higher than max_angle
-
-    print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx}); {newPan},{newTilt}")
-
-    pantilthat.pan(newPan)
-    pantilthat.tilt(newTilt)
 
 def show_box_center_and_size(rectangle):
     '''
