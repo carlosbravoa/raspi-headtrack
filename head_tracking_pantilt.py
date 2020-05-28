@@ -83,7 +83,7 @@ def main():
                 center_camera(result, image_center, debug)
 
             else:
-                print("No objects detected with the given threshold")
+                #print("No objects detected with the given threshold")
                 object_on_sight = False
 
             if not object_on_sight and not timer:  # if there was an object before, and is no longer on screen
