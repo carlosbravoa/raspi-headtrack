@@ -87,7 +87,7 @@ def main():
                     object_on_sight = False
                 
                 if timer:
-                    if timer - time.time() > 5:  # If 5 seconds have passed without activity
+                    if time.time() - timer > 5:  # If 5 seconds have passed without activity
                         reset_pan_tilt()
                         timer = None  # We stop the timer
 
