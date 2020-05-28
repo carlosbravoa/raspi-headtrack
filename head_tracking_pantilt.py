@@ -88,8 +88,8 @@ def main():
 
             if not object_on_sight and not timer:  # if there was an object before, and is no longer on screen
                 timer = time.time()  # We start a timer for reseting the angles later
-            
-            if timer and not object_on_sight:
+
+            elif not object_on_sight and timer:
                 elapsed_time = time.time() - timer
                 # If 5 seconds have passed without activity. More than 8, do nothing
                 if elapsed_time > 5 and elapsed_time < 8:
