@@ -74,22 +74,25 @@ def main():
             ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
                                         relative_coord=False, top_k=10)
             if ans:
+                print([o.score for o in ans])
                 object_on_sight = True
                 timer = None
                 #for obj in ans:  # For multiple objects on screen
                 obj = ans[0]  # Follow only one object, the first detected object
+
                 if obj.score > 0.3:
                     resultado = show_box_center_and_size(obj.bounding_box)
                     center_camera(resultado, image_center, debug)
-            else:
-                if object_on_sight:  # if there was an object before, and is no longer on screen
-                    timer = time.time()  # We start a timer for reseting the angles later
-                    object_on_sight = False
-                
-                if timer:
-                    if time.time() - timer > 5:  # If 5 seconds have passed without activity
-                        reset_pan_tilt()
-                        timer = None  # We stop the timer
+                else:
+                    if object_on_sight:  # if there was an object before, and is no longer on screen
+                        timer = time.time()  # We start a timer for reseting the angles later
+                        object_on_sight = False
+                        print("object left")
+                    
+                    if timer:
+                        if time.time() - timer > 5:  # If 5 seconds have passed without activity
+                            reset_pan_tilt()
+                            timer = None  # We stop the timer
 
         except KeyboardInterrupt:
             print("Closing program")
