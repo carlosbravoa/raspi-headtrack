@@ -71,28 +71,30 @@ def main():
             object_on_sight = False
             timer = None
 
-            ans = engine.DetectWithImage(pil_im, threshold=0.05, keep_aspect_ratio=True,
-                                        relative_coord=False, top_k=10)
+            ans = engine.DetectWithImage(pil_im, threshold=0.3, keep_aspect_ratio=True,
+                                        relative_coord=False, top_k=1)
             if ans:
-                print([o.score for o in ans])
-                object_on_sight = True
-                timer = None
                 #for obj in ans:  # For multiple objects on screen
                 obj = ans[0]  # Follow only one object, the first detected object
 
-                if obj.score > 0.3:
-                    resultado = show_box_center_and_size(obj.bounding_box)
-                    center_camera(resultado, image_center, debug)
-                else:
-                    if object_on_sight:  # if there was an object before, and is no longer on screen
-                        timer = time.time()  # We start a timer for reseting the angles later
-                        object_on_sight = False
-                        print("object left")
-                    
-                    if timer:
-                        if time.time() - timer > 5:  # If 5 seconds have passed without activity
-                            reset_pan_tilt()
-                            timer = None  # We stop the timer
+                object_on_sight = True
+                timer = None
+                result = show_box_center_and_size(obj.bounding_box)
+                center_camera(result, image_center, debug)
+
+            else:
+                print("No objects detected with the given threshold")
+                object_on_sight = False
+
+            if not object_on_sight and not timer:  # if there was an object before, and is no longer on screen
+                timer = time.time()  # We start a timer for reseting the angles later
+            
+            if timer and not object_on_sight:
+                elapsed_time = time.time() - timer
+                # If 5 seconds have passed without activity. More than 8, do nothing
+                if elapsed_time > 5 and elapsed_time < 8:
+                    reset_pan_tilt()
+                    timer = None  # We stop the timer
 
         except KeyboardInterrupt:
             print("Closing program")
