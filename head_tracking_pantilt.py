@@ -56,6 +56,9 @@ def main():
     debug = DEBUG
     image_center = IMAGE_CENTER
 
+    object_on_sight = False
+    timer = None
+
     print("Capture started")
     while True:
         try:
@@ -68,8 +71,6 @@ def main():
             #cv2_im = np.array(pil_im)
             #cv2_im = cv2.flip(cv2_im, 1) #Flip horizontally
             #cv2_im = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
-            object_on_sight = False
-            timer = None
 
             ans = engine.DetectWithImage(pil_im, threshold=0.3, keep_aspect_ratio=True,
                                         relative_coord=False, top_k=1)
