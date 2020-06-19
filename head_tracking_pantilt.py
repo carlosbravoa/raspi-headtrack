@@ -12,6 +12,8 @@ import io
 import argparse
 import time
 import sys
+from os.path import join, exists
+from os import makedirs
 from PIL import Image
 from edgetpu.detection.engine import DetectionEngine
 
@@ -24,6 +26,7 @@ IMAGE_CENTER = (int(IMAGE_SIZE[0]/2), int(IMAGE_SIZE[1]/2))
 MINANGLESTEP = 1 #Degrees
 IMGTHRESHOLD = 20 #pixels to stop moving once the image has been more or less centered
 DEBUG = False # Change this to see more information on console about the detection
+IMAGES_DIR = "images"
 
 def main():
     '''Main function for running head tracking.
@@ -36,6 +39,12 @@ def main():
         '--model', help='Path of the detection model.', required=True)
 
     args = parser.parse_args()
+
+    image_number = 0
+
+    # Let's create the images directory
+    if not exists(IMAGES_DIR):
+        makedirs(IMAGES_DIR)
 
     # Initialize the pan-tilt thing
     reset_pan_tilt()
@@ -72,6 +81,7 @@ def main():
             #cv2_im = cv2.flip(cv2_im, 1) #Flip horizontally
             #cv2_im = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
 
+            # Remember. Doc at https://coral.ai/docs/reference/edgetpu.detection.engine/
             ans = engine.DetectWithImage(pil_im, threshold=0.3, keep_aspect_ratio=True,
                                         relative_coord=False, top_k=1)
             if ans:
@@ -81,7 +91,10 @@ def main():
                 object_on_sight = True
                 timer = None
                 result = show_box_center_and_size(obj.bounding_box)
-                center_camera(result, image_center, debug)
+                moved = center_camera(result, image_center, debug)
+
+                if moved == 0:  # it didn't move, and there is an object on sight
+                    image_number = save_picture(pil_im, image_number)
 
             else:
                 #print("No objects detected with the given threshold")
@@ -122,6 +135,9 @@ def center_camera(objxy, screencenter, debug=False):
     Args:
         objxy: Tuple (x,y) of the detected object
         screencenter: Tuple(x,y) with the center of the screen
+    Returns:
+        1 if moved
+        0 if not
     '''
 
     max_angle = 80  # To stay safe and not exeed the max angle of the servo
@@ -160,8 +176,12 @@ def center_camera(objxy, screencenter, debug=False):
     if debug:
         print(f"({objxy}) status: pan:{currentPan}, tilt:{currentTilt}; (dX:{dX}, dy:{dY}, step:{stepx},{stepy})({newPan},{newTilt})")
 
+    result = 1 if newPan != currentPan or newTilt != currentTilt else 0
+
     pantilthat.pan(newPan)
     pantilthat.tilt(newTilt)
+
+    return result
 
 def show_box_center_and_size(rectangle):
     '''
@@ -184,6 +204,11 @@ def show_box_center_and_size(rectangle):
     centerY = int(Y0 + (h / 2.0))
 
     return (centerX, centerY)
+
+def save_picture(pil_img, image_number):
+    filename = f"image_{image_number}.jpg"
+    pil_img.save(join(IMAGES_DIR, filename))
+    return image_number + 1
 
 if __name__ == '__main__':
     main()
